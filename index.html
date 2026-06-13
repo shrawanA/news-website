@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsHub - Global News Aggregation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        [data-theme="dark"] .header { background: rgba(15, 23, 42, 0.9); }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .logo:hover { transform: scale(1.02); }
+        .logo i { font-size: 1.75rem; }
+        .nav {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        .nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        .nav a:hover, .nav a.active {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            max-width: 400px;
+        }
+        .search-box {
+            position: relative;
+            flex: 1;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            outline: none;
+        }
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .search-box i {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        .search-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        .search-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .control-btn {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 1rem;
+            position: relative;
+        }
+        .control-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .control-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        .breaking-bar {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            overflow: hidden;
+        }
+        .breaking-label {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+        .breaking-ticker {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        .ticker-content {
+            display: flex;
+            gap: 3rem;
+            animation: ticker 30s linear infinite;
+            white-space: nowrap;
+        }
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+        .ticker-item:hover { opacity: 1; }
+        .ticker-dot {
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .featured-section { margin-bottom: 3rem; }
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .section-title i { color: var(--primary); }
+        .featured-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .hero-card {
+            position: relative;
+            border-radius: var(--radius);
+            overflow: hidden;
+            height: 400px;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+        .hero-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15);
+        }
+        .hero-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        .hero-card:hover img { transform: scale(1.05); }
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+        }
+        .hero-category {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+        .hero-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+        .hero-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        .side-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .side-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .side-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        .side-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        .side-card-content {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .side-card-category {
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        .side-card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .side-card-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: auto;
+        }
+        .latest-section { margin-bottom: 3rem; }
+        .latest-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .sort-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+        }
+        .view-toggle { display: flex; gap: 0.25rem; }
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        .news-grid.list-view { grid-template-columns: 1fr; }
+        .news-grid.list-view .news-card {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+        }
+        .news-grid.list-view .news-card img { height: 100%; }
+        .news-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        .news-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .news-card:hover img { transform: scale(1.05); }
+        .news-card-content { padding: 1.25rem; }
+        .news-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .news-category {
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .bookmark-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            padding: 0.25rem;
+        }
+        .bookmark-btn:hover, .bookmark-btn.active {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+        .bookmark-btn.active { color: var(--accent); }
+        .news-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .news-excerpt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .news-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .news-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .news-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .load-more { text-align: center; margin-top: 2rem; }
+        .load-more-btn {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--text);
+            padding: 0.875rem 2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+        .load-more-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .article-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+            z-index: 501;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .article-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .modal-header {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .modal-header img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal-header-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+        }
+        .modal-category {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+        .modal-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 10;
+        }
+        .modal-close:hover {
+            background: rgba(0,0,0,0.8);
+            transform: rotate(90deg);
+        }
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .modal-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+        .modal-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .modal-content-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--text);
+        }
+        .modal-content-text p { margin-bottom: 1.25rem; }
+        .modal-content-text h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--primary);
+        }
+        .modal-content-text blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.25rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .modal-btn-primary:hover { background: var(--primary-dark); }
+        .modal-btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+        .modal-btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .bookmarks-sidebar {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            z-index: 200;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .bookmarks-sidebar.open { right: 0; }
+        .bookmarks-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            z-index: 10;
+        }
+        .bookmarks-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .close-sidebar:hover {
+            background: var(--bg);
+            color: var(--danger);
+        }
+        .bookmarks-list { padding: 1rem; }
+        .bookmark-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+        .bookmark-item:hover { background: var(--bg); }
+        .bookmark-item img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .bookmark-info { flex: 1; }
+        .bookmark-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .bookmark-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .remove-bookmark {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: var(--transition);
+            align-self: flex-start;
+        }
+        .remove-bookmark:hover { color: var(--danger); }
+        .empty-bookmarks {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+        .empty-bookmarks i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem 2rem;
+            margin-top: 4rem;
+        }
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+        .footer-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .footer-section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 0.5rem; }
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .footer-links a:hover {
+            color: var(--primary);
+            transform: translateX(4px);
+        }
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 2rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text);
+            cursor: pointer;
+        }
+        @media (max-width: 1024px) {
+            .featured-grid { grid-template-columns: 1fr; }
+            .hero-card { height: 300px; }
+            .side-cards {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            .side-card { min-width: 280px; }
+            .article-modal {
+                width: 95%;
+                max-height: 95vh;
+            }
+            .modal-header { height: 200px; }
+            .modal-title { font-size: 1.25rem; }
+        }
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 1rem;
+                flex-wrap: wrap;
+            }
+            .nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--surface);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--border);
+                box-shadow: var(--shadow-lg);
+            }
+            .nav.open { display: flex; }
+            .mobile-menu-btn { display: block; }
+            .search-container {
+                order: 3;
+                width: 100%;
+                max-width: none;
+            }
+            .main { padding: 1rem; }
+            .news-grid { grid-template-columns: 1fr; }
+            .news-grid.list-view .news-card { grid-template-columns: 1fr; }
+            .bookmarks-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+            .hero-title { font-size: 1.25rem; }
+            .footer-content { grid-template-columns: 1fr; text-align: center; }
+            .modal-body { padding: 1rem; }
+            .modal-actions { flex-direction: column; }
+            .modal-btn { justify-content: center; }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface);
+            color: var(--text);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 300;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo" onclick="resetHome(); return false;">
+                <i class="fas fa-newspaper"></i>
+                NewsHub
+            </a>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <nav>
+                <ul class="nav" id="nav">
+                    <li><a href="#" class="active" data-category="all" onclick="filterCategory('all', this); return false;">Home</a></li>
+                    <li><a href="#" data-category="world" onclick="filterCategory('world', this); return false;">World</a></li>
+                    <li><a href="#" data-category="technology" onclick="filterCategory('technology', this); return false;">Technology</a></li>
+                    <li><a href="#" data-category="business" onclick="filterCategory('business', this); return false;">Business</a></li>
+                    <li><a href="#" data-category="science" onclick="filterCategory('science', this); return false;">Science</a></li>
+                    <li><a href="#" data-category="sports" onclick="filterCategory('sports', this); return false;">Sports</a></li>
+                    <li><a href="#" data-category="entertainment" onclick="filterCategory('entertainment', this); return false;">Entertainment</a></li>
+                </ul>
+            </nav>
+
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search news..." oninput="performSearch()">
+                </div>
+                <button class="search-btn" onclick="performSearch()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" id="bookmarkToggle" onclick="toggleBookmarks()" title="Bookmarks">
+                    <i class="fas fa-bookmark"></i>
+                    <span id="bookmarkCount" style="position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 0.7rem; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center;">0</span>
+                </button>
+                <button class="control-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="control-btn" onclick="toggleView()" title="Toggle View">
+                    <i class="fas fa-list" id="viewIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breaking News -->
+    <div class="breaking-bar">
+        <span class="breaking-label">Breaking</span>
+        <div class="breaking-ticker">
+            <div class="ticker-content" id="tickerContent">
+                <div class="ticker-item"><span class="ticker-dot"></span> 2026 FIFA World Cup kicks off across North America</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> US-Iran ceasefire extended as negotiations continue</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> Artemis II crew returns safely from historic Moon mission</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> NBA Finals: Celtics face Thunder in championship showdown</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> Global markets rally as inflation shows signs of cooling</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> Steven Spielberg's "Disclosure Day" explores alien visitation</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> 2026 FIFA World Cup kicks off across North America</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> US-Iran ceasefire extended as negotiations continue</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> Artemis II crew returns safely from historic Moon mission</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> NBA Finals: Celtics face Thunder in championship showdown</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> Global markets rally as inflation shows signs of cooling</div>
+                <div class="ticker-item"><span class="ticker-dot"></span> Steven Spielberg's "Disclosure Day" explores alien visitation</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Featured Section -->
+        <section class="featured-section" id="featuredSection">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-star"></i> Featured News</h2>
+            </div>
+            <div class="featured-grid" id="featuredGrid">
+                <!-- Featured content loaded by JS -->
+            </div>
+        </section>
+
+        <!-- Latest News -->
+        <section class="latest-section">
+            <div class="latest-header">
+                <h2 class="section-title" id="latestTitle"><i class="fas fa-clock"></i> Latest News</h2>
+                <div class="filter-controls">
+                    <select class="sort-select" id="sortSelect" onchange="sortNews()">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                    <div class="view-toggle">
+                        <button class="control-btn active" onclick="setView('grid')" title="Grid View">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="control-btn" onclick="setView('list')" title="List View">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="news-grid" id="newsGrid">
+                <!-- News loaded by JS -->
+            </div>
+            <div class="load-more">
+                <button class="load-more-btn" onclick="loadMore()">
+                    <i class="fas fa-spinner fa-spin" style="display: none;"></i>
+                    Load More Articles
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Article Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    <div class="article-modal" id="articleModal">
+        <div class="modal-header" id="modalHeader">
+            <img src="" alt="" id="modalImage">
+            <div class="modal-header-overlay">
+                <span class="modal-category" id="modalCategory">Category</span>
+                <h2 class="modal-title" id="modalTitle">Article Title</h2>
+            </div>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-meta">
+                <span><i class="fas fa-user"></i> <span id="modalAuthor">Author</span></span>
+                <span><i class="fas fa-clock"></i> <span id="modalDate">Date</span></span>
+                <span><i class="fas fa-eye"></i> <span id="modalViews">Views</span></span>
+                <span><i class="fas fa-book-open"></i> <span id="modalReadTime">Read Time</span></span>
+            </div>
+            <div class="modal-content-text" id="modalContent">
+                <!-- Full article content -->
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-primary" onclick="shareArticle()">
+                    <i class="fas fa-share-alt"></i> Share Article
+                </button>
+                <button class="modal-btn modal-btn-secondary" id="modalBookmarkBtn" onclick="toggleModalBookmark()">
+                    <i class="far fa-bookmark"></i> Bookmark
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookmarks Sidebar -->
+    <div class="overlay" id="overlay" onclick="toggleBookmarks()"></div>
+    <aside class="bookmarks-sidebar" id="bookmarksSidebar">
+        <div class="bookmarks-header">
+            <h3 class="bookmarks-title"><i class="fas fa-bookmark"></i> Your Bookmarks</h3>
+            <button class="close-sidebar" onclick="toggleBookmarks()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="bookmarks-list" id="bookmarksList">
+            <div class="empty-bookmarks">
+                <i class="fas fa-bookmark"></i>
+                <p>No bookmarks yet. Click the bookmark icon on any article to save it!</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Article bookmarked!</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div>
+                <div class="footer-brand">
+                    <i class="fas fa-newspaper"></i>
+                    NewsHub
+                </div>
+                <p class="footer-desc">Your trusted source for global news aggregation. We bring you the latest stories from around the world, curated and verified.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    <li><a href="#" onclick="filterCategory('world'); return false;"><i class="fas fa-globe"></i> World</a></li>
+                    <li><a href="#" onclick="filterCategory('technology'); return false;"><i class="fas fa-microchip"></i> Technology</a></li>
+                    <li><a href="#" onclick="filterCategory('business'); return false;"><i class="fas fa-chart-line"></i> Business</a></li>
+                    <li><a href="#" onclick="filterCategory('science'); return false;"><i class="fas fa-flask"></i> Science</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fas fa-info-circle"></i> About Us</a></li>
+                    <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                    <li><a href="#"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
+                    <li><a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                    <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+                    <li><a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a></li>
+                    <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p> NewsHub. All rights reserved. Your trusted source for global news aggregation.</p>
+        </div>
+    </footer>
+
+    <script>
+
+        // Complete news database with 36 articles (6 per category)
+        const newsData = [
+            // ===== TECHNOLOGY (6 articles) =====
+            {
+                id: 1,
+                title: "Revolutionary AI Model Achieves Human-Level Reasoning in Scientific Discovery",
+                excerpt: "Researchers have developed a new artificial intelligence system capable of making novel scientific discoveries, potentially accelerating research across multiple fields.",
+                content: `<p>In a groundbreaking development, researchers at the Institute for Advanced Machine Learning have unveiled a new AI system capable of human-level reasoning in scientific contexts. The system, dubbed "ScientistAI," has demonstrated the ability to formulate hypotheses, design experiments, and draw conclusions from complex datasets.</p>
+                    <h3>Breaking New Ground</h3>
+                    <p>Unlike traditional AI models that excel at pattern recognition, ScientistAI employs a novel architecture that combines deep learning with symbolic reasoning. This hybrid approach allows the system to not only identify patterns but also understand the underlying causal relationships driving scientific phenomena.</p>
+                    <blockquote>"This represents a paradigm shift in how we approach scientific research. For the first time, we have an AI that can truly think like a scientist." — Dr. Sarah Chen, Lead Researcher</blockquote>
+                    <h3>Real-World Applications</h3>
+                    <p>The implications of this technology are vast. In pharmaceutical research, ScientistAI has already identified three promising drug candidates for antibiotic-resistant bacteria by analyzing molecular structures and predicting interactions. In materials science, it has proposed a new class of superconductors that could operate at higher temperatures than currently possible.</p>
+                    <h3>Ethical Considerations</h3>
+                    <p>As with any powerful technology, the development of ScientistAI raises important ethical questions. The research team has established a comprehensive ethics framework to ensure the technology is used responsibly, with human oversight remaining central to all major research decisions.</p>`,
+                category: "technology",
+                categoryLabel: "Technology",
+                image: "https://picsum.photos/seed/tech-ai/800/400",
+                author: "Sarah Chen",
+                date: "2 hours ago",
+                readTime: "8 min read",
+                views: 12500,
+                featured: true
+            },
+            {
+                id: 2,
+                title: "Quantum Internet: First City-Wide Network Goes Live",
+                excerpt: "Scientists have successfully deployed the first city-scale quantum communication network, promising unhackable encryption.",
+                content: `<p>The future of secure communication has arrived in the form of a fully operational quantum internet network spanning an entire metropolitan area. Scientists at the National Quantum Laboratory have successfully deployed quantum key distribution (QKD) infrastructure across a major city, marking the first time such a network has operated at this scale.</p>
+                    <h3>How It Works</h3>
+                    <p>Quantum internet utilizes the principles of quantum mechanics to transmit information in a way that is fundamentally secure. By exploiting quantum entanglement and the no-cloning theorem, any attempt to intercept communication is immediately detectable, making eavesdropping theoretically impossible.</p>
+                    <h3>Implications for Cybersecurity</h3>
+                    <p>With traditional encryption methods facing increasing threats from quantum computers, the quantum internet offers a future-proof solution. Banking transactions, classified government communications, and sensitive medical data can now be transmitted with absolute security guarantees.</p>
+                    <blockquote>"This is the beginning of a new era in cybersecurity. Within a decade, quantum networks will be as commonplace as today's internet infrastructure." — Dr. Yuki Tanaka, Quantum Physicist</blockquote>`,
+                category: "technology",
+                categoryLabel: "Technology",
+                image: "https://picsum.photos/seed/tech-quantum/800/400",
+                author: "Dr. Yuki Tanaka",
+                date: "8 hours ago",
+                readTime: "6 min read",
+                views: 11400,
+                featured: false
+            },
+            {
+                id: 3,
+                title: "Apple Unveils Revolutionary Mixed Reality Headset with Neural Interface",
+                excerpt: "The tech giant's latest wearable device combines augmented reality with direct brain-computer interaction, changing how we interact with digital content.",
+                content: `<p>Apple has once again redefined the boundaries of consumer technology with the announcement of Vision Pro Neural, a mixed reality headset that incorporates a non-invasive neural interface for direct brain-computer interaction. The device, unveiled at a special event in Cupertino, represents the most ambitious convergence of neuroscience and consumer electronics to date.</p>
+                    <h3>Neural Interface Technology</h3>
+                    <p>The headset uses a array of advanced sensors that detect neural signals through the scalp, allowing users to control virtual interfaces with thought alone. While not as precise as invasive brain implants, the technology achieves remarkable accuracy for everyday computing tasks, gaming, and creative applications.</p>
+                    <h3>Market Impact</h3>
+                    <p>Industry analysts predict the device could accelerate adoption of mixed reality technology by an order of magnitude. With a starting price of $2,999, it's positioned as a premium product, but Apple has hinted at more affordable versions in development.</p>`,
+                category: "technology",
+                categoryLabel: "Technology",
+                image: "https://picsum.photos/seed/tech-vr/800/400",
+                author: "Mark Stevens",
+                date: "14 hours ago",
+                readTime: "5 min read",
+                views: 28700,
+                featured: false
+            },
+            {
+                id: 4,
+                title: "Open-Source AI Model Surpasses GPT-4 on Multiple Benchmarks",
+                excerpt: "A community-developed large language model has achieved unprecedented performance, challenging the dominance of proprietary AI systems.",
+                content: `<p>In a stunning demonstration of the power of open collaboration, the open-source community has produced an AI model that outperforms GPT-4 on several key benchmarks. The model, developed by a consortium of researchers, hobbyists, and independent developers, represents a significant shift in the AI landscape.</p>
+                    <h3>The Power of Open Source</h3>
+                    <p>Unlike proprietary models developed by well-funded corporations, this achievement was made possible through distributed computing resources donated by volunteers worldwide. The training process utilized a novel federated learning approach that allowed thousands of participants to contribute computational power without sharing sensitive data.</p>
+                    <h3>Democratizing AI</h3>
+                    <p>Perhaps most importantly, OpenMind is available for free download and can run on consumer-grade hardware with appropriate optimization. This accessibility stands in stark contrast to proprietary models that require expensive API access or specialized cloud infrastructure.</p>
+                    <blockquote>"This proves that the open-source community can not only keep pace with corporate AI development but actually lead it. The future of AI is open." — Dr. James Wilson, Open Source AI Initiative</blockquote>`,
+                category: "technology",
+                categoryLabel: "Technology",
+                image: "https://picsum.photos/seed/tech-opensource/800/400",
+                author: "James Wilson",
+                date: "18 hours ago",
+                readTime: "7 min read",
+                views: 34200,
+                featured: false
+            },
+            {
+                id: 5,
+                title: "6G Network Trials Achieve Terabit-Speed Data Transfer",
+                excerpt: "Early tests of sixth-generation wireless technology have demonstrated data speeds 100 times faster than current 5G networks.",
+                content: `<p>Researchers conducting early trials of 6G wireless technology have achieved data transfer speeds exceeding 1 terabit per second, representing a quantum leap over current 5G capabilities. The breakthrough occurred at a test facility in South Korea, where a consortium of telecommunications companies and academic institutions have been collaborating on next-generation wireless standards.</p>
+                    <h3>Beyond Speed</h3>
+                    <p>While the headline speed is impressive, 6G technology promises capabilities far beyond faster downloads. The new standard is designed to support massive-scale Internet of Things deployments, with the ability to connect millions of devices per square kilometer. This density is essential for smart cities, autonomous vehicle networks, and industrial automation.</p>
+                    <h3>Technical Challenges</h3>
+                    <p>Achieving these speeds requires operating in previously unused frequency bands above 100 GHz. While these frequencies offer enormous bandwidth, they also present challenges in terms of signal propagation and penetration. The research team has developed novel antenna arrays and beamforming techniques to address these limitations.</p>`,
+                category: "technology",
+                categoryLabel: "Technology",
+                image: "https://picsum.photos/seed/tech-6g/800/400",
+                author: "Lisa Park",
+                date: "22 hours ago",
+                readTime: "6 min read",
+                views: 15600,
+                featured: false
+            },
+            {
+                id: 6,
+                title: "Robotic Exoskeleton Restores Mobility to Paralyzed Patients",
+                excerpt: "A new lightweight exoskeleton uses AI to interpret neural signals, allowing paralyzed individuals to walk naturally for the first time.",
+                content: `<p>Medical technology has reached a new milestone with the FDA approval of NeuroWalk, a robotic exoskeleton that restores natural walking ability to individuals with spinal cord injuries. Unlike previous exoskeletons that required manual control or pre-programmed movements, NeuroWalk uses artificial intelligence to interpret the user's intended movements from neural signals.</p>
+                    <h3>How NeuroWalk Works</h3>
+                    <p>The system combines a lightweight carbon-fiber frame with a sophisticated neural interface that detects motor cortex activity. When the user thinks about walking, the AI translates these neural patterns into smooth, natural movements of the robotic limbs. The result is walking that appears remarkably natural, with appropriate gait patterns and balance correction.</p>
+                    <h3>Clinical Results</h3>
+                    <p>Clinical trials involving 200 patients with spinal cord injuries showed remarkable results. After three months of training with NeuroWalk, 85% of participants were able to walk independently using the device, and 40% showed signs of neural plasticity suggesting potential recovery of natural motor function.</p>
+                    <blockquote>"We're not just restoring mobility; we're seeing evidence that the brain is relearning to control the body. This could change everything we know about spinal cord injury rehabilitation." — Dr. Maria Rodriguez, Clinical Director</blockquote>`,
+                category: "technology",
+                categoryLabel: "Technology",
+                image: "https://picsum.photos/seed/tech-exo/800/400",
+                author: "Dr. Maria Rodriguez",
+                date: "1 day ago",
+                readTime: "7 min read",
+                views: 19800,
+                featured: false
+            },
+
+            // ===== BUSINESS (6 articles) =====
+            {
+                id: 7,
+                title: "Global Markets Rally as Inflation Shows Signs of Cooling",
+                excerpt: "Major stock indices reached new highs today as latest economic data suggests inflation is finally beginning to ease.",
+                content: `<p>Wall Street and global markets are celebrating today as major indices reached new record highs, driven by unexpectedly positive inflation data. The Consumer Price Index (CPI) report for this month showed inflation declining to 2.1% year-over-year, approaching the Federal Reserve's target of 2% and raising hopes for a "soft landing" scenario.</p>
+                    <h3>Market Response</h3>
+                    <p>The S&P 500 surged 2.8% on the news, while the Nasdaq Composite jumped 3.2%, led by technology stocks that had been particularly sensitive to interest rate concerns. International markets followed suit, with European and Asian indices posting significant gains.</p>
+                    <h3>Economic Implications</h3>
+                    <p>The cooling inflation, combined with continued job growth, suggests the Federal Reserve may have successfully navigated the economy through the post-pandemic recovery without triggering a recession. Economists who had predicted a hard landing are now revising their forecasts.</p>
+                    <blockquote>"This is the outcome we were hoping for but didn't dare expect. The Fed's aggressive rate hikes appear to have worked without breaking the economy." — Michael Roberts, Chief Economist</blockquote>`,
+                category: "business",
+                categoryLabel: "Business",
+                image: "https://picsum.photos/seed/biz-market/800/400",
+                author: "Michael Roberts",
+                date: "3 hours ago",
+                readTime: "5 min read",
+                views: 8900,
+                featured: true
+            },
+            {
+                id: 8,
+                title: "Electric Vehicle Sales Surpass Traditional Cars in Major Markets",
+                excerpt: "For the first time in automotive history, electric vehicles have outsold gasoline-powered cars in several major markets.",
+                content: `<p>The automotive industry has reached a historic tipping point as electric vehicles (EVs) outsold internal combustion engine vehicles in three of the world's five largest auto markets during the last quarter. This milestone, long predicted by industry analysts, marks the beginning of what many believe will be a permanent shift in personal transportation.</p>
+                    <h3>The Numbers</h3>
+                    <p>In China, the world's largest auto market, EVs accounted for 52% of all new car sales in the last quarter. Norway, long a leader in EV adoption, saw electric vehicles capture 85% of the market. Even in the United States, traditionally slower to adopt EVs, electric vehicles reached 48% of new car sales in California and several other progressive states.</p>
+                    <h3>Industry Transformation</h3>
+                    <p>Traditional automakers are scrambling to adapt. General Motors has announced plans to convert all its manufacturing facilities to EV production by 2030. Ford has spun off its electric division as a separate business unit to attract investment and talent.</p>
+                    <blockquote>"We're witnessing the fastest technology transition in the history of the automotive industry. Companies that don't adapt will not survive." — Robert Kim, Auto Industry Analyst</blockquote>`,
+                category: "business",
+                categoryLabel: "Business",
+                image: "https://picsum.photos/seed/biz-ev/800/400",
+                author: "Robert Kim",
+                date: "9 hours ago",
+                readTime: "6 min read",
+                views: 7800,
+                featured: false
+            },
+            {
+                id: 9,
+                title: "Amazon Announces Major Expansion into Healthcare Services",
+                excerpt: "The e-commerce giant is launching a comprehensive healthcare platform that could disrupt the traditional medical industry.",
+                content: `<p>Amazon has made its most ambitious move into the healthcare sector yet, announcing Amazon Health, a comprehensive platform that integrates telemedicine, prescription delivery, health monitoring, and insurance services. The announcement, made at a press conference in Seattle, signals the company's intent to become a major player in the $4 trillion healthcare industry.</p>
+                    <h3>Comprehensive Platform</h3>
+                    <p>Amazon Health combines several existing services with new offerings. Amazon Pharmacy, which has been operating for several years, will be expanded to include same-day delivery of medications in major markets. The new Amazon Clinic will provide 24/7 telemedicine access, with AI-assisted diagnosis and human physician oversight.</p>
+                    <h3>Industry Reaction</h3>
+                    <p>Healthcare industry stocks tumbled on the news, with traditional insurers and hospital chains seeing significant declines. Analysts predict Amazon's entry will accelerate the shift toward consumer-directed healthcare and put pressure on incumbent providers to improve efficiency and patient experience.</p>
+                    <blockquote>"Amazon has a history of entering industries and fundamentally changing how they operate. Healthcare is about to experience that same disruption." — Jennifer Walsh, Healthcare Analyst</blockquote>`,
+                category: "business",
+                categoryLabel: "Business",
+                image: "https://picsum.photos/seed/biz-health/800/400",
+                author: "Jennifer Walsh",
+                date: "16 hours ago",
+                readTime: "5 min read",
+                views: 21300,
+                featured: false
+            },
+            {
+                id: 10,
+                title: "Cryptocurrency Market Rebounds as Institutional Adoption Accelerates",
+                excerpt: "Major financial institutions are embracing digital assets, driving a sustained recovery in cryptocurrency markets.",
+                content: `<p>The cryptocurrency market has entered a new phase of maturity as major financial institutions announce significant commitments to digital assets. Bitcoin has surged past $85,000, while Ethereum has reached new all-time highs, driven by institutional investment and regulatory clarity in major markets.</p>
+                    <h3>Wall Street Embraces Crypto</h3>
+                    <p>Goldman Sachs has launched a dedicated cryptocurrency trading desk, while JPMorgan has introduced blockchain-based settlement services for institutional clients. BlackRock, the world's largest asset manager, now offers cryptocurrency investment products to retail investors through its popular ETF platform.</p>
+                    <h3>Regulatory Progress</h3>
+                    <p>Perhaps most significantly, regulatory frameworks are finally taking shape. The European Union's Markets in Crypto-Assets (MiCA) regulation has provided clear guidelines for the industry, while the United States has seen bipartisan support for sensible cryptocurrency legislation.</p>
+                    <blockquote>"We're past the speculative phase. Cryptocurrency is becoming a legitimate asset class with real utility in payments, remittances, and decentralized finance." — Alex Thompson, Digital Asset Strategist</blockquote>`,
+                category: "business",
+                categoryLabel: "Business",
+                image: "https://picsum.photos/seed/biz-crypto/800/400",
+                author: "Alex Thompson",
+                date: "20 hours ago",
+                readTime: "6 min read",
+                views: 24500,
+                featured: false
+            },
+            {
+                id: 11,
+                title: "Global Supply Chain Crisis Eases as New Logistics Hubs Emerge",
+                excerpt: "Innovative logistics solutions and regional manufacturing shifts are resolving the bottlenecks that plagued global trade for years.",
+                content: `<p>The global supply chain crisis that has disrupted industries worldwide for the past three years is finally showing signs of resolution. A combination of innovative logistics technologies, strategic shifts in manufacturing locations, and improved inventory management practices has dramatically reduced shipping delays and transportation costs.</p>
+                    <h3>New Logistics Technologies</h3>
+                    <p>Autonomous shipping vessels, AI-powered route optimization, and blockchain-based supply chain tracking have all contributed to improved efficiency. Major ports have implemented automated container handling systems that have reduced unloading times by 60%.</p>
+                    <h3>Regional Manufacturing Shift</h3>
+                    <p>The crisis has accelerated a trend toward regional manufacturing. Companies that previously relied on single-source suppliers in Asia are now diversifying their production across multiple continents. Mexico, Vietnam, and Eastern Europe have emerged as major manufacturing hubs.</p>
+                    <blockquote>"The pandemic taught us that efficiency without resilience is a recipe for disaster. The new supply chain model prioritizes both." — Patricia Liu, Supply Chain Director</blockquote>`,
+                category: "business",
+                categoryLabel: "Business",
+                image: "https://picsum.photos/seed/biz-shipping/800/400",
+                author: "Patricia Liu",
+                date: "1 day ago",
+                readTime: "7 min read",
+                views: 11200,
+                featured: false
+            },
+            {
+                id: 12,
+                title: "Startup Valuations Reach Record Highs Despite Economic Uncertainty",
+                excerpt: "Venture capital funding has surged to unprecedented levels, with early-stage startups commanding valuations that would have been unimaginable just years ago.",
+                content: `<p>Despite lingering concerns about economic stability, the venture capital market has reached new heights. Startups across sectors from artificial intelligence to climate technology are commanding record valuations, with total VC investment in the first quarter exceeding $100 billion globally for the first time in history.</p>
+                    <h3>The AI Gold Rush</h3>
+                    <p>Artificial intelligence startups are leading the charge, accounting for nearly 40% of all venture investment. Companies developing foundation models, AI infrastructure, and industry-specific AI applications have raised mega-rounds at valuations that would have been reserved for public companies just a few years ago.</p>
+                    <h3>Geographic Diversification</h3>
+                    <p>While Silicon Valley remains the epicenter of venture capital, investment is increasingly global. Startup ecosystems in Bangalore, Singapore, Lagos, and São Paulo are maturing rapidly, producing companies that compete on equal footing with their American counterparts.</p>
+                    <blockquote>"We're seeing a democratization of innovation. Great ideas can come from anywhere, and capital is following talent rather than the other way around." — David Chen, Venture Capital Partner</blockquote>`,
+                category: "business",
+                categoryLabel: "Business",
+                image: "https://picsum.photos/seed/biz-startup/800/400",
+                author: "David Chen",
+                date: "2 days ago",
+                readTime: "6 min read",
+                views: 18900,
+                featured: false
+            },
+
+            // ===== SCIENCE (6 articles) =====
+            {
+                id: 13,
+                title: "NASA Artemis II Crew Returns Safely After Historic Moon Mission",
+                excerpt: "Astronauts aboard Artemis II completed their journey around the moon, marking the first human voyage beyond low Earth orbit in over 50 years.",
+                content: `<p>Astronauts aboard Artemis II have successfully returned to Earth after a historic journey around the Moon, splashing down safely in the Pacific Ocean. This monumental mission marked the first time humans have traveled this far from Earth in over 50 years, since the Apollo era.</p>
+                    <h3>Groundbreaking Medical Research</h3>
+                    <p>Throughout the mission, astronauts performed extensive tests on spacecraft systems and how the human body responds to deep space conditions such as radiation exposure and microgravity. They collected detailed medical and performance data that will help scientists understand how long-duration missions affect an astronaut's bones, cognition, and muscles.</p>
+                    <h3>Space Medicine Breakthroughs</h3>
+                    <p>The mission also carried the AVATAR experiment, studying the effects of deep space radiation and microgravity on human health. Countries across the Asia-Pacific, including India, China, Japan, Australia, and South Korea, are increasing efforts in space medicine research to support future missions beyond Earth.</p>
+                    <blockquote>"We're in a whole new era, an exciting era, of space exploration that makes this time so special." — Bill Nelson, Former NASA Administrator</blockquote>`,
+                category: "science",
+                categoryLabel: "Science",
+                image: "https://picsum.photos/seed/sci-moon/800/400",
+                author: "Dr. Emily Watson",
+                date: "4 hours ago",
+                readTime: "7 min read",
+                views: 15200,
+                featured: true
+            },
+            {
+                id: 14,
+                title: "Universal Coronavirus Vaccine Shows Promise in First Human Trials",
+                excerpt: "Scientists have successfully tested an AI-designed vaccine that targets multiple coronaviruses, including SARS-CoV-2 and related bat viruses.",
+                content: `<p>In a major step toward pandemic preparedness, scientists have successfully tested an AI-designed universal coronavirus vaccine in humans for the first time. The vaccine, which was found to be safe and well tolerated, generated immune responses against multiple coronaviruses, including SARS-CoV-2, SARS, and related bat viruses with pandemic potential.</p>
+                    <h3>How It Works</h3>
+                    <p>By targeting features shared across an entire virus family, the vaccine aims to provide protection even as viruses mutate and evolve. This approach represents a fundamental shift from traditional vaccines that target specific strains, potentially eliminating the need for annual booster shots.</p>
+                    <h3>Clinical Trial Results</h3>
+                    <p>Phase I trials involving 200 participants showed strong immune responses with minimal side effects. Neutralizing antibodies were detected against all tested coronavirus strains, including variants that have shown resistance to current vaccines.</p>
+                    <blockquote>"This could be the holy grail of vaccine development — one shot that protects against an entire family of viruses." — Dr. Maria Santos, Immunologist</blockquote>`,
+                category: "science",
+                categoryLabel: "Science",
+                image: "https://picsum.photos/seed/sci-vaccine/800/400",
+                author: "Dr. Maria Santos",
+                date: "10 hours ago",
+                readTime: "6 min read",
+                views: 18300,
+                featured: false
+            },
+            {
+                id: 15,
+                title: "New Alzheimer's Target Discovered: Experimental Compound Shows Promise",
+                excerpt: "Researchers have identified a new therapeutic target and created an experimental compound that blocks a damaging process inside brain cells.",
+                content: `<p>Researchers have identified a new Alzheimer's target and created an experimental compound that blocks a damaging process inside brain cells. In mice, the treatment slowed nerve cell loss, reduced Alzheimer's-related changes, and even appeared to promote healthier brain function.</p>
+                    <h3>The Discovery</h3>
+                    <p>The research team focused on a protein called CD33, which is known to be involved in immune responses in the brain. They discovered that overactive CD33 contributes to the inflammation and cell death seen in Alzheimer's disease. Their new compound selectively inhibits CD33 while preserving beneficial immune functions.</p>
+                    <h3>Clinical Potential</h3>
+                    <p>The compound has now entered Phase I human trials, with early results expected by the end of the year. If successful, it could represent the first disease-modifying treatment for Alzheimer's — one that actually stops or slows the disease rather than just managing symptoms.</p>
+                    <blockquote>"For the first time, we have a treatment that appears to address the root cause of Alzheimer's, not just the symptoms. This could change everything." — Dr. Robert Kim, Neurologist</blockquote>`,
+                category: "science",
+                categoryLabel: "Science",
+                image: "https://picsum.photos/seed/sci-brain/800/400",
+                author: "Dr. Robert Kim",
+                date: "1 day ago",
+                readTime: "7 min read",
+                views: 22100,
+                featured: false
+            },
+            {
+                id: 16,
+                title: "NASA's Roman Space Telescope Nears Launch: Will Map Hundreds of Millions of Galaxies",
+                excerpt: "The Nancy Grace Roman Space Telescope is scheduled for launch in September 2026, promising to revolutionize our understanding of dark matter and dark energy.",
+                content: `<p>NASA's Nancy Grace Roman Space Telescope is now aiming for an earlier launch in September 2026, with scientists expecting it to uncover hundreds of millions of galaxies and possibly even entirely new cosmic phenomena. Designed to explore dark matter, dark energy, and distant exoplanets, the telescope will capture massive, ultra-detailed surveys of the cosmos using infrared vision.</p>
+                    <h3>Revolutionary Capabilities</h3>
+                    <p>The Roman Telescope will use a 2.4-meter mirror and a wide-field instrument to capture images 100 times larger than those from the Hubble Space Telescope. This enormous field of view will allow astronomers to survey the entire sky in just a few years, something that would take decades with current technology.</p>
+                    <h3>Dark Matter and Dark Energy</h3>
+                    <p>The telescope's primary mission is to study dark matter and dark energy, the mysterious components that make up 95% of the universe but remain invisible to current instruments. By observing how galaxies warp and distort light from more distant objects, Roman will map the distribution of dark matter across cosmic time.</p>
+                    <blockquote>"Roman will give us the most complete picture of the universe we've ever had. It's like going from a sketch to a high-definition photograph." — Dr. Jane Smith, NASA Astrophysicist</blockquote>`,
+                category: "science",
+                categoryLabel: "Science",
+                image: "https://picsum.photos/seed/sci-space/800/400",
+                author: "Dr. Jane Smith",
+                date: "2 days ago",
+                readTime: "8 min read",
+                views: 19500,
+                featured: false
+            },
+            {
+                id: 17,
+                title: "Artificial Photosynthesis System Self-Regulates Without Batteries",
+                excerpt: "Scientists have developed a system that creates solar fuel more efficiently by automatically adapting to changing sunlight conditions.",
+                content: `<p>Scientists have developed an artificial photosynthesis system that essentially regulates itself, eliminating the need for batteries used in many current designs. The key innovation is an electrolyzer that automatically adapts to changing sunlight by altering its electrical properties as it heats up, keeping solar fuel production more stable while reducing cost and complexity.</p>
+                    <h3>How It Works</h3>
+                    <p>Traditional artificial photosynthesis systems require batteries or capacitors to smooth out the intermittent nature of sunlight. The new system uses a specially designed electrolyzer that changes its electrical resistance based on temperature. As sunlight intensity increases, the device heats up and naturally adjusts its operating parameters to maintain optimal fuel production.</p>
+                    <h3>Solar Fuel Production</h3>
+                    <p>The system converts water and carbon dioxide into hydrogen and carbon-based fuels using only sunlight. In tests, the device produced hydrogen at rates comparable to conventional electrolyzers while maintaining stable output even as clouds passed overhead.</p>
+                    <blockquote>"This is a major step toward practical solar fuel production. By eliminating batteries, we've solved one of the biggest barriers to scaling up this technology." — Dr. Chen Wei, Materials Scientist</blockquote>`,
+                category: "science",
+                categoryLabel: "Science",
+                image: "https://picsum.photos/seed/sci-solar/800/400",
+                author: "Dr. Chen Wei",
+                date: "3 days ago",
+                readTime: "6 min read",
+                views: 12800,
+                featured: false
+            },
+            {
+                id: 18,
+                title: "New Treatment Restores Lost Cartilage in Arthritis Patients",
+                excerpt: "A breakthrough therapy that blocks an aging-related protein has shown remarkable results in reversing osteoarthritis damage.",
+                content: `<p>A new treatment that blocks an aging-related protein has restored lost cartilage in old mice and helped prevent arthritis after knee injuries. Human cartilage samples showed similar signs of regeneration, raising hopes for a disease-modifying treatment for osteoarthritis, which affects over 500 million people worldwide.</p>
+                    <h3>The Science Behind the Treatment</h3>
+                    <p>The therapy targets a protein called p16, which accumulates in aging cells and contributes to inflammation and tissue breakdown. By selectively eliminating cells that express high levels of p16, the treatment removes the source of inflammatory signals while preserving healthy cartilage-producing cells.</p>
+                    <h3>Human Trials</h3>
+                    <p>Encouraged by the animal results, researchers tested the therapy on human cartilage samples obtained from knee replacement surgeries. The treatment stimulated cartilage-producing cells to resume normal function and reduced inflammatory markers to levels seen in healthy tissue.</p>
+                    <blockquote>"For the first time, we have a therapy that doesn't just mask arthritis pain but actually rebuilds the damaged joint. This could eliminate the need for joint replacement surgery for many patients." — Dr. Sarah Johnson, Rheumatologist</blockquote>`,
+                category: "science",
+                categoryLabel: "Science",
+                image: "https://picsum.photos/seed/sci-medical/800/400",
+                author: "Dr. Sarah Johnson",
+                date: "4 days ago",
+                readTime: "7 min read",
+                views: 16700,
+                featured: false
+            },
+
+            // ===== WORLD (6 articles) =====
+            {
+                id: 19,
+                title: "2026 FIFA World Cup Kicks Off Across North America",
+                excerpt: "The 23rd FIFA World Cup begins today with matches across the United States, Canada, and Mexico, marking the first time the tournament has been hosted by three nations.",
+                content: `<p>The 2026 FIFA World Cup has officially kicked off across North America, with opening ceremonies and matches taking place in cities spanning the United States, Canada, and Mexico. This historic tournament marks the first time the World Cup has been hosted by three nations and features an expanded format of 48 teams competing for the ultimate prize in international football.</p>
+                    <h3>Historic Opening</h3>
+                    <p>The opening match at MetLife Stadium in New Jersey drew a crowd of over 82,000 spectators, with millions more watching worldwide. The tournament's expanded format means more nations than ever before have the opportunity to compete on the world stage, including first-time participants from across Africa and Asia.</p>
+                    <h3>Infrastructure and Impact</h3>
+                    <p>Host cities have invested billions in stadium renovations, transportation improvements, and fan zones. The economic impact is expected to exceed $20 billion across the three host nations, with tourism and hospitality sectors seeing unprecedented demand.</p>
+                    <blockquote>"This World Cup represents the future of international sport — inclusive, expansive, and truly global. We're seeing football's power to unite nations." — Gianni Infantino, FIFA President</blockquote>`,
+                category: "world",
+                categoryLabel: "World",
+                image: "https://picsum.photos/seed/world-cup/800/400",
+                author: "Ahmed Hassan",
+                date: "1 hour ago",
+                readTime: "5 min read",
+                views: 45000,
+                featured: true
+            },
+            {
+                id: 20,
+                title: "US-Iran Ceasefire Extended as Negotiations Continue",
+                excerpt: "Diplomatic efforts have successfully extended the ceasefire between the United States and Iran, with both sides agreeing to continue talks in Geneva.",
+                content: `<p>Diplomatic efforts in the Middle East have achieved a significant breakthrough as the United States and Iran agreed to extend their ceasefire agreement for an additional 60 days. The announcement came after marathon negotiation sessions in Geneva, where representatives from both nations worked to address longstanding tensions.</p>
+                    <h3>Negotiation Progress</h3>
+                    <p>Key points of discussion include Iran's nuclear program, regional security arrangements, and economic sanctions. While significant differences remain, both sides have expressed cautious optimism about the potential for a comprehensive agreement.</p>
+                    <h3>Regional Implications</h3>
+                    <p>The ceasefire extension has been welcomed across the Middle East, with neighboring countries expressing hope that reduced tensions will lead to greater regional stability. Oil markets have reacted positively, with crude prices falling 3% on the news.</p>
+                    <blockquote>"This is a moment of genuine hope. For the first time in years, we see a path toward peaceful resolution." — António Guterres, UN Secretary-General</blockquote>`,
+                category: "world",
+                categoryLabel: "World",
+                image: "https://picsum.photos/seed/world-peace/800/400",
+                author: "David Okafor",
+                date: "5 hours ago",
+                readTime: "7 min read",
+                views: 25600,
+                featured: false
+            },
+            {
+                id: 21,
+                title: "Climate Summit: 190 Countries Agree on Historic Emissions Protocol",
+                excerpt: "In an unprecedented show of global cooperation, nearly every nation on Earth has signed onto a binding agreement to reduce carbon emissions.",
+                content: `<p>In an unprecedented show of global cooperation, nearly every nation on Earth has signed onto a binding agreement to reduce carbon emissions by 50% before 2035. The agreement, reached at the Climate Summit in Copenhagen, represents the most ambitious international environmental accord in history.</p>
+                    <h3>Key Provisions</h3>
+                    <p>The protocol includes mandatory emissions reporting, a global carbon pricing mechanism, and substantial funding for renewable energy transition in developing nations. Wealthy countries have committed to $500 billion annually in climate finance to support the global transition.</p>
+                    <h3>Implementation Challenges</h3>
+                    <p>While the agreement has been hailed as historic, implementation will require unprecedented coordination. Enforcement mechanisms include trade sanctions for non-compliance and a new international climate court to adjudicate disputes.</p>
+                    <blockquote>"This is the moment humanity chose to save itself. Future generations will look back at this agreement as the turning point." — Greta Thunberg, Climate Activist</blockquote>`,
+                category: "world",
+                categoryLabel: "World",
+                image: "https://picsum.photos/seed/world-climate/800/400",
+                author: "Ahmed Hassan",
+                date: "7 hours ago",
+                readTime: "7 min read",
+                views: 21000,
+                featured: false
+            },
+            {
+                id: 22,
+                title: "European Union Announces Digital Passport System for All Citizens",
+                excerpt: "The EU has launched a comprehensive digital identity framework that will allow citizens to access services across all member states with a single digital ID.",
+                content: `<p>The European Union has officially launched its comprehensive digital identity framework, known as the European Digital Identity Wallet. The system allows all EU citizens to store their official documents — including ID cards, driver's licenses, medical prescriptions, and educational qualifications — in a secure digital format accessible across all 27 member states.</p>
+                    <h3>How It Works</h3>
+                    <p>The digital wallet uses advanced encryption and biometric verification to ensure security. Citizens can access government services, open bank accounts, and even travel across borders using only their smartphone. The system is built on open standards, ensuring interoperability between different national systems.</p>
+                    <h3>Economic Impact</h3>
+                    <p>The digital identity system is expected to save the EU economy an estimated €100 billion annually by reducing administrative overhead and enabling cross-border digital commerce. Small businesses, in particular, are expected to benefit from simplified compliance requirements.</p>
+                    <blockquote>"This is about making Europe fit for the digital age while preserving our values of privacy and individual rights." — Ursula von der Leyen, European Commission President</blockquote>`,
+                category: "world",
+                categoryLabel: "World",
+                image: "https://picsum.photos/seed/world-eu/800/400",
+                author: "Claire Dubois",
+                date: "12 hours ago",
+                readTime: "6 min read",
+                views: 17800,
+                featured: false
+            },
+            {
+                id: 23,
+                title: "India Becomes World's Third-Largest Economy, Surpassing Japan",
+                excerpt: "With sustained GDP growth exceeding 7%, India has officially overtaken Japan to become the world's third-largest economy by nominal GDP.",
+                content: `<p>India has officially surpassed Japan to become the world's third-largest economy by nominal GDP, according to the latest data from the International Monetary Fund. The milestone marks the culmination of decades of economic reform and rapid growth that has transformed the South Asian nation into a global economic powerhouse.</p>
+                    <h3>Economic Transformation</h3>
+                    <p>India's GDP has grown at an average rate of 7.2% over the past five years, driven by a booming technology sector, manufacturing expansion, and a rapidly growing middle class. The country's digital infrastructure, including the Unified Payments Interface (UPI), has revolutionized financial transactions and enabled unprecedented economic inclusion.</p>
+                    <h3>Challenges Ahead</h3>
+                    <p>Despite the impressive growth, challenges remain. Income inequality has increased, and environmental concerns are mounting as industrialization accelerates. The government has pledged to address these issues through targeted social programs and green energy initiatives.</p>
+                    <blockquote>"This is not just an economic milestone; it's a testament to the potential of democratic developing nations. India has shown that growth and inclusion can go hand in hand." — Dr. Raghuram Rajan, Former RBI Governor</blockquote>`,
+                category: "world",
+                categoryLabel: "World",
+                image: "https://picsum.photos/seed/world-india/800/400",
+                author: "Rajesh Patel",
+                date: "18 hours ago",
+                readTime: "6 min read",
+                views: 23400,
+                featured: false
+            },
+            {
+                id: 24,
+                title: "Africa's First High-Speed Rail Network Connects East African Capitals",
+                excerpt: "A revolutionary rail project has linked Nairobi, Kampala, and Kigali, cutting travel times from days to hours and boosting regional trade.",
+                content: `<p>Africa's first high-speed rail network has officially opened, connecting the capitals of Kenya, Uganda, and Rwanda with trains traveling at speeds up to 320 km/h. The project, funded by a combination of African Development Bank loans and private investment, has reduced travel time between Nairobi and Kigali from three days to just four hours.</p>
+                    <h3>Economic Integration</h3>
+                    <p>The rail network is expected to boost intra-African trade by 40% within the first year of operation. Goods that previously took weeks to move between countries can now be transported in hours, dramatically reducing costs for businesses and consumers alike.</p>
+                    <h3>Environmental Benefits</h3>
+                    <p>The electric rail system is powered primarily by renewable energy, including geothermal power from Kenya's Rift Valley and hydroelectric power from Uganda. The project is expected to reduce carbon emissions from regional transport by 2 million tons annually.</p>
+                    <blockquote>"This is the beginning of a new Africa — connected, efficient, and sustainable. We're showing the world what African innovation can achieve." — Dr. Akinwumi Adesina, African Development Bank President</blockquote>`,
+                category: "world",
+                categoryLabel: "World",
+                image: "https://picsum.photos/seed/world-rail/800/400",
+                author: "Grace Osei",
+                date: "1 day ago",
+                readTime: "7 min read",
+                views: 18900,
+                featured: false
+            },
+
+            // ===== SPORTS (6 articles) =====
+            {
+                id: 25,
+                title: "NBA Finals: Celtics Face Thunder in Historic Championship Showdown",
+                excerpt: "The Boston Celtics and Oklahoma City Thunder are set to face off in the 2026 NBA Finals, with both teams seeking their first championship in decades.",
+                content: `<p>The 2026 NBA Finals are set to begin tonight, featuring a compelling matchup between the Boston Celtics and the Oklahoma City Thunder. The series marks the first time these two franchises have met in the championship round, with both teams seeking to end lengthy title droughts.</p>
+                    <h3>The Matchup</h3>
+                    <p>The Celtics, led by MVP candidate Jayson Tatum and a deep supporting cast, have dominated the Eastern Conference playoffs, losing only two games en route to the Finals. Their balanced attack, combining elite three-point shooting with suffocating defense, has made them the betting favorites.</p>
+                    <p>The Thunder, meanwhile, have captured the imagination of basketball fans with their young, dynamic roster. Shai Gilgeous-Alexander has established himself as one of the league's premier players, while rookie Chet Holmgren has been a revelation on both ends of the court.</p>
+                    <h3>Schedule Changes</h3>
+                    <p>Due to the overlap with the FIFA World Cup, the NBA has adjusted its Finals schedule, with games starting earlier in the evening to accommodate international viewers. The league expects record global viewership, particularly in Europe and Asia.</p>
+                    <blockquote>"This is the matchup basketball fans have been dreaming of. Two young, exciting teams with contrasting styles. It's going to be a classic." — Charles Barkley, NBA Analyst</blockquote>`,
+                category: "sports",
+                categoryLabel: "Sports",
+                image: "https://picsum.photos/seed/sport-nba/800/400",
+                author: "James Martinez",
+                date: "2 hours ago",
+                readTime: "4 min read",
+                views: 32000,
+                featured: true
+            },
+            {
+                id: 26,
+                title: "World Cup 2026: Host Cities Reveal Stadium Innovations",
+                excerpt: "The 16 host cities for the upcoming FIFA World Cup have unveiled ambitious plans for stadium renovations and transportation improvements ahead of the tournament.",
+                content: `<p>The 16 host cities for the 2026 FIFA World Cup have revealed ambitious plans for stadium renovations and transportation improvements ahead of the tournament. With matches being played across the United States, Canada, and Mexico, organizers have committed to creating a seamless experience for the estimated 5 million fans expected to attend.</p>
+                    <h3>Stadium Transformations</h3>
+                    <p>MetLife Stadium in New Jersey, the venue for the final, is undergoing a $500 million renovation that includes expanded seating capacity to 90,000, state-of-the-art video boards, and improved accessibility features. SoFi Stadium in Los Angeles has installed a retractable roof to ensure comfortable conditions regardless of weather.</p>
+                    <h3>Transportation Networks</h3>
+                    <p>Host cities have invested heavily in public transportation, with new light rail lines, expanded bus networks, and dedicated World Cup shuttle services. The US Department of Transportation has allocated $2 billion in federal funding to support these improvements.</p>
+                    <blockquote>"These investments will benefit residents long after the final whistle. We're building infrastructure for the next generation." — Victor Montagliani, CONCACAF President</blockquote>`,
+                category: "sports",
+                categoryLabel: "Sports",
+                image: "https://picsum.photos/seed/world-cup/800/400",
+                author: "James Martinez",
+                date: "5 hours ago",
+                readTime: "5 min read",
+                views: 6700,
+                featured: false
+            },
+            {
+                id: 27,
+                title: "Olympic Committee Announces New Sports for 2028 Games",
+                excerpt: "The International Olympic Committee has officially approved several new sports for the Los Angeles 2028 Summer Olympics, including competitive gaming and parkour.",
+                content: `<p>The International Olympic Committee has officially approved several new sports for the Los Angeles 2028 Summer Olympics, including competitive gaming (esports), parkour, and breaking (breakdancing). The additions reflect the IOC's ongoing effort to engage younger audiences and evolve with contemporary sports culture.</p>
+                    <h3>Esports Debut</h3>
+                    <p>The inclusion of esports marks a historic moment for competitive gaming, which has grown from a niche hobby to a billion-dollar industry with hundreds of millions of fans worldwide. The Olympic esports competition will feature titles across multiple genres, including strategy, fighting, and sports simulation games.</p>
+                    <h3>Parkour and Breaking</h3>
+                    <p>Parkour, the discipline of moving through obstacles with speed and efficiency, will make its Olympic debut after successful trial events. Breaking, which debuted at the Paris 2024 Games, has been retained due to its popularity with younger demographics.</p>
+                    <blockquote>"The Olympics must evolve to remain relevant. These new sports represent the future of athletic competition." — Thomas Bach, IOC President</blockquote>`,
+                category: "sports",
+                categoryLabel: "Sports",
+                image: "https://picsum.photos/seed/sport-olympic/800/400",
+                author: "Tom Bradley",
+                date: "11 hours ago",
+                readTime: "4 min read",
+                views: 15400,
+                featured: false
+            },
+            {
+                id: 28,
+                title: "Lionel Messi Announces Retirement from International Football After World Cup",
+                excerpt: "The Argentine legend has confirmed that the 2026 World Cup will be his final appearance for the national team, ending an illustrious international career.",
+                content: `<p>Lionel Messi has announced that the 2026 FIFA World Cup will be his final tournament with the Argentine national team, bringing an end to one of the most storied international careers in football history. The 38-year-old made the announcement in an emotional press conference in Buenos Aires, surrounded by teammates and family.</p>
+                    <h3>A Legend's Farewell</h3>
+                    <p>Messi, who led Argentina to World Cup glory in 2022 and Copa América victories in 2021 and 2024, has scored 106 goals in 180 appearances for his country. His decision to retire from international football after the 2026 World Cup gives fans one final opportunity to watch the maestro on the biggest stage.</p>
+                    <h3>Legacy and Impact</h3>
+                    <p>Messi's influence extends far beyond his on-field achievements. He has inspired a generation of players across South America and worldwide, with his combination of skill, humility, and sportsmanship setting the standard for professional athletes.</p>
+                    <blockquote>"Messi is not just a footballer; he's an artist who happens to play football. Watching him is a privilege that future generations will envy." — Pep Guardiola, Manchester City Manager</blockquote>`,
+                category: "sports",
+                categoryLabel: "Sports",
+                image: "https://picsum.photos/seed/sport-messi/800/400",
+                author: "Carlos Mendez",
+                date: "15 hours ago",
+                readTime: "5 min read",
+                views: 41200,
+                featured: false
+            },
+            {
+                id: 29,
+                title: "Wimbledon 2026: AI Line Judges Replace Human Officials for First Time",
+                excerpt: "The All England Club has announced that artificial intelligence will handle all line-calling decisions at this year's tournament, eliminating human error.",
+                content: `<p>The All England Lawn Tennis Club has announced that the 2026 Wimbledon Championships will be the first Grand Slam tournament to use exclusively AI-powered line judges. The decision, which eliminates human line officials entirely, follows successful trials at smaller tournaments and promises to eliminate controversial calls that have marred past championships.</p>
+                    <h3>Technology Behind the System</h3>
+                    <p>The AI system uses a combination of high-speed cameras positioned around the court and machine learning algorithms trained on millions of previous shots. The technology can determine ball placement with accuracy exceeding 99.9%, far surpassing human capability.</p>
+                    <h3>Reaction from Players</h3>
+                    <p>Top players have generally welcomed the change, with many citing frustration with inconsistent human calls. However, some veterans have expressed nostalgia for the human element, arguing that line judges are part of tennis tradition.</p>
+                    <blockquote>"As long as the calls are accurate, I'm happy. I've lost matches because of bad line calls, so this is progress." — Novak Djokovic, World No. 1</blockquote>`,
+                category: "sports",
+                categoryLabel: "Sports",
+                image: "https://picsum.photos/seed/sport-tennis/800/400",
+                author: "Emma Wilson",
+                date: "1 day ago",
+                readTime: "4 min read",
+                views: 19800,
+                featured: false
+            },
+            {
+                id: 30,
+                title: "Formula 1 Introduces Sustainable Fuel Mandate for All Teams",
+                excerpt: "Starting with the 2026 season, all F1 cars must run on 100% sustainable fuel as part of the sport's commitment to carbon neutrality by 2030.",
+                content: `<p>Formula 1 has officially introduced its sustainable fuel mandate for the 2026 season, requiring all teams to use 100% sustainable fuels derived from non-food biomass, municipal waste, and carbon capture technology. The mandate is part of F1's broader commitment to achieve carbon neutrality by 2030 and demonstrates the sport's role in advancing sustainable technology.</p>
+                    <h3>Technical Innovation</h3>
+                    <p>The new fuel, developed in partnership with Saudi Aramco and other energy companies, delivers the same power output as traditional racing fuel while reducing lifecycle carbon emissions by over 90%. The fuel is compatible with existing internal combustion engines, meaning teams did not need to redesign their power units.</p>
+                    <h3>Industry Impact</h3>
+                    <p>F1's sustainable fuel program is already influencing the automotive industry, with several manufacturers planning to introduce similar fuels in their road cars within five years. The technology developed for racing is being adapted for aviation and shipping, sectors that are difficult to electrify.</p>
+                    <blockquote>"Racing has always been the laboratory for automotive innovation. What we learn on the track will drive the sustainable transportation revolution." — Stefano Domenicali, F1 CEO</blockquote>`,
+                category: "sports",
+                categoryLabel: "Sports",
+                image: "https://picsum.photos/seed/sport-f1/800/400",
+                author: "Michael Ross",
+                date: "2 days ago",
+                readTime: "6 min read",
+                views: 14500,
+                featured: false
+            },
+
+            // ===== ENTERTAINMENT (6 articles) =====
+            {
+                id: 31,
+                title: "Steven Spielberg's 'Disclosure Day' Explores Alien Visitation",
+                excerpt: "The legendary director's new film examines humanity's first contact with extraterrestrial intelligence, blending documentary-style realism with blockbuster spectacle.",
+                content: `<p>Steven Spielberg has returned to the science fiction genre that defined his early career with "Disclosure Day," a sweeping epic that imagines humanity's first confirmed contact with extraterrestrial intelligence. The film, which premiered at the Cannes Film Festival to a 15-minute standing ovation, represents Spielberg's most ambitious project since "Saving Private Ryan."</p>
+                    <h3>A New Kind of First Contact Story</h3>
+                    <p>Unlike traditional alien invasion narratives, "Disclosure Day" focuses on the political, social, and psychological aftermath of a peaceful but world-altering revelation. The film follows multiple storylines across continents, from the President's emergency cabinet meetings to a farmer in rural India grappling with the theological implications.</p>
+                    <h3>Technical Achievement</h3>
+                    <p>The film's visual effects, created by a team of over 2,000 artists at Industrial Light & Magic, have been hailed as groundbreaking. The alien designs, developed in consultation with biologists and physicists, avoid the typical humanoid tropes in favor of truly alien physiologies that still convey emotional depth.</p>
+                    <blockquote>"This isn't just a movie about aliens. It's about what happens when everything we believe is called into question." — Steven Spielberg, Director</blockquote>`,
+                category: "entertainment",
+                categoryLabel: "Entertainment",
+                image: "https://picsum.photos/seed/ent-movie/800/400",
+                author: "Anna Kowalski",
+                date: "3 hours ago",
+                readTime: "5 min read",
+                views: 28900,
+                featured: true
+            },
+            {
+                id: 32,
+                title: "Streaming Wars: New Platform Gains 50M Users in First Month",
+                excerpt: "A new streaming service has shattered launch records by gaining 50 million subscribers in its first month, challenging established giants with its innovative content model.",
+                content: `<p>A new streaming service called "StreamVerse" has shattered launch records by gaining 50 million subscribers in its first month of operation, sending shockwaves through the entertainment industry. The platform, founded by a consortium of independent filmmakers and tech entrepreneurs, has challenged established giants like Netflix and Disney+ with its innovative content model.</p>
+                    <h3>Innovative Business Model</h3>
+                    <p>StreamVerse differentiates itself through a unique revenue-sharing model that gives content creators 70% of subscription revenue based on viewing time. This has attracted top talent from traditional studios, with major directors and actors signing exclusive deals.</p>
+                    <h3>Content Strategy</h3>
+                    <p>The platform's launch lineup includes 50 original series and films, with budgets rivaling those of major studios. Early hits include "The Last Colony," a space opera that has already been renewed for three seasons, and "Underground," a documentary series about subterranean cities.</p>
+                    <blockquote>"We're not just another streaming service. We're building a creator-first ecosystem that will reshape how entertainment is produced and consumed." — Sarah Chen, StreamVerse CEO</blockquote>`,
+                category: "entertainment",
+                categoryLabel: "Entertainment",
+                image: "https://picsum.photos/seed/ent-stream/800/400",
+                author: "Lisa Park",
+                date: "8 hours ago",
+                readTime: "4 min read",
+                views: 15600,
+                featured: false
+            },
+            {
+                id: 33,
+                title: "AI-Generated Music Hits Billboard Top 10 for First Time",
+                excerpt: "A song created entirely by artificial intelligence has entered the Billboard Hot 100, sparking debate about creativity and the future of the music industry.",
+                content: `<p>A song created entirely by artificial intelligence has made history by entering the Billboard Hot 100 at number 7, becoming the first AI-generated track to achieve mainstream commercial success. The song, titled "Digital Dreams," was created by a neural network trained on 50 years of pop music history.</p>
+                    <h3>How It Was Made</h3>
+                    <p>The AI system, developed by a team of researchers at MIT and Sony Music, analyzed patterns in melody, harmony, rhythm, and lyrics from over 100,000 songs. It then generated an original composition that music critics have described as "uncannily catchy" and "emotionally resonant."</p>
+                    <h3>Industry Reaction</h3>
+                    <p>The achievement has sparked intense debate within the music industry. Some artists have embraced the technology as a new creative tool, while others have raised concerns about copyright, authenticity, and the future of human musicians.</p>
+                    <blockquote>"This is neither the end of human creativity nor a gimmick. It's a new instrument, like the synthesizer was in the 1970s." — Dr. Marcus Webb, Music Technologist</blockquote>`,
+                category: "entertainment",
+                categoryLabel: "Entertainment",
+                image: "https://picsum.photos/seed/ent-music/800/400",
+                author: "David Kim",
+                date: "14 hours ago",
+                readTime: "5 min read",
+                views: 22300,
+                featured: false
+            },
+            {
+                id: 34,
+                title: "Broadway Reopens with Immersive Theater Experience",
+                excerpt: "Broadway theaters have reopened with groundbreaking immersive productions that use holographic technology to place audiences inside the story.",
+                content: `<p>Broadway has officially reopened with a new generation of immersive theater productions that use holographic technology, spatial audio, and interactive set design to place audiences directly inside the story. The first production, a revival of "A Midsummer Night's Dream," has sold out every performance since its premiere.</p>
+                    <h3>The Technology</h3>
+                    <p>The productions use a combination of transparent LED screens, holographic projectors, and wearable haptic devices to create a fully immersive environment. Audience members can walk through the set, interact with virtual characters, and even influence the plot through their choices.</p>
+                    <h3>Critical Reception</h3>
+                    <p>Theater critics have been divided, with some praising the innovation while others argue that the technology distracts from the core elements of acting and storytelling. However, audience response has been overwhelmingly positive, with 95% of attendees rating the experience as "transformative."</p>
+                    <blockquote>"This is theater evolved for the 21st century. We're not replacing the human element; we're amplifying it with technology that was unimaginable just years ago." — Lin-Manuel Miranda, Producer</blockquote>`,
+                category: "entertainment",
+                categoryLabel: "Entertainment",
+                image: "https://picsum.photos/seed/ent-theater/800/400",
+                author: "Rachel Green",
+                date: "1 day ago",
+                readTime: "4 min read",
+                views: 18700,
+                featured: false
+            },
+            {
+                id: 35,
+                title: "Virtual Concerts Now Generate More Revenue Than Live Shows",
+                excerpt: "Digital concert experiences using VR and AR technology have surpassed traditional live performances in revenue, with artists reaching global audiences from their home studios.",
+                content: `<p>Virtual concerts using VR and AR technology have officially surpassed traditional live performances in total revenue for the first time, according to a new report from the International Music Industry Association. The shift, accelerated by technological advances and changing consumer preferences, has allowed artists to reach global audiences without leaving their home studios.</p>
+                    <h3>The Virtual Concert Experience</h3>
+                    <p>Modern virtual concerts offer experiences impossible in physical venues. Fans can choose their vantage point, from front row to backstage, interact with other attendees in virtual spaces, and even meet artists in digital meet-and-greets. Haptic feedback suits allow users to feel the bass and crowd energy.</p>
+                    <h3>Artist Benefits</h3>
+                    <p>For artists, virtual concerts eliminate touring costs while expanding reach. A single show can accommodate millions of attendees, compared to the 20,000-80,000 capacity of the largest physical venues. Revenue per attendee is lower, but total earnings often exceed those of traditional tours.</p>
+                    <blockquote>"I can perform for fans in Tokyo, Lagos, and São Paulo simultaneously, all while having dinner with my family. This is the future of live music." — Beyoncé, Recording Artist</blockquote>`,
+                category: "entertainment",
+                categoryLabel: "Entertainment",
+                image: "https://picsum.photos/seed/ent-concert/800/400",
+                author: "Tom Bradley",
+                date: "2 days ago",
+                readTime: "5 min read",
+                views: 13400,
+                featured: false
+            },
+            {
+                id: 36,
+                title: "Gaming Industry Revenue Surpasses Movies and Music Combined",
+                excerpt: "The global video game industry has reached a new milestone, generating more revenue than the film and music industries combined for the first time in history.",
+                content: `<p>The global video game industry has officially surpassed the film and music industries combined in annual revenue, according to the latest Entertainment Software Association report. The milestone, long anticipated by industry analysts, confirms gaming's position as the dominant form of entertainment worldwide.</p>
+                    <h3>The Numbers</h3>
+                    <p>Gaming generated $280 billion in revenue in 2025, compared to $100 billion for the film industry and $26 billion for recorded music. Mobile gaming accounted for the largest share at $120 billion, followed by console gaming at $90 billion and PC gaming at $70 billion.</p>
+                    <h3>Cultural Impact</h3>
+                    <p>The financial milestone reflects gaming's growing cultural influence. Major game releases now generate more media coverage than film premieres, and esports tournaments regularly outdraw traditional sporting events in viewership. Universities have established dedicated game design and esports management programs.</p>
+                    <blockquote>"Gaming isn't just entertainment anymore; it's a cultural force that shapes how we socialize, tell stories, and even do business. This is just the beginning." — Phil Spencer, Xbox CEO</blockquote>`,
+                category: "entertainment",
+                categoryLabel: "Entertainment",
+                image: "https://picsum.photos/seed/ent-game/800/400",
+                author: "Alex Thompson",
+                date: "3 days ago",
+                readTime: "6 min read",
+                views: 19800,
+                featured: false
+            }
+        ];
+
+        let bookmarks = JSON.parse(localStorage.getItem('newshub_bookmarks')) || [];
+        let currentCategory = 'all';
+        let currentView = 'grid';
+        let displayedCount = 6;
+        let isDarkMode = localStorage.getItem('newshub_theme') === 'dark';
+        let currentModalArticle = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (isDarkMode) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.querySelector('#themeToggle i').classList.replace('fa-moon', 'fa-sun');
+            }
+            renderFeatured();
+            renderNews();
+            updateBookmarkCount();
+        });
+
+        function renderFeatured() {
+            const featured = newsData.filter(n => n.featured).slice(0, 3);
+            const hero = featured[0];
+            const side = featured.slice(1);
+
+            const heroHTML = `
+                <div class="hero-card" onclick="openArticleModal(${hero.id})">
+                    <img src="${hero.image}" alt="${hero.title}" onerror="this.src=\'https://picsum.photos/seed/fallback\' + Math.random() + \'/800/400\'">
+                    <div class="hero-overlay">
+                        <span class="hero-category">${hero.categoryLabel}</span>
+                        <h3 class="hero-title">${hero.title}</h3>
+                        <div class="hero-meta">
+                            <span><i class="fas fa-user"></i> ${hero.author}</span>
+                            <span><i class="fas fa-clock"></i> ${hero.date}</span>
+                            <span><i class="fas fa-eye"></i> ${hero.views.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const sideHTML = side.map(item => `
+                <div class="side-card" onclick="openArticleModal(${item.id})">
+                    <img src="${item.image}" alt="${item.title}" onerror="this.src=\'https://picsum.photos/seed/fallback\' + Math.random() + \'/800/400\'">
+                    <div class="side-card-content">
+                        <span class="side-card-category">${item.categoryLabel}</span>
+                        <h4 class="side-card-title">${item.title}</h4>
+                        <div class="side-card-meta">${item.date} · ${item.readTime}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('featuredGrid').innerHTML = heroHTML + `
+                <div class="side-cards">${sideHTML}</div>
+            `;
+        }
+
+        function renderNews() {
+            let filtered = currentCategory === 'all' 
+                ? newsData.filter(n => !n.featured)
+                : newsData.filter(n => n.category === currentCategory);
+
+            const toShow = filtered.slice(0, displayedCount);
+
+            const html = toShow.map(item => `
+                <article class="news-card" data-id="${item.id}">
+                    <img src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.src=\'https://picsum.photos/seed/fallback\' + Math.random() + \'/800/400\'">
+                    <div class="news-card-content">
+                        <div class="news-card-header">
+                            <span class="news-category">${item.categoryLabel}</span>
+                            <button class="bookmark-btn ${isBookmarked(item.id) ? 'active' : ''}" onclick="toggleBookmark(event, ${item.id})">
+                                <i class="${isBookmarked(item.id) ? 'fas' : 'far'} fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <h3 class="news-title" onclick="openArticleModal(${item.id})">${item.title}</h3>
+                        <p class="news-excerpt">${item.excerpt}</p>
+                        <div class="news-footer">
+                            <div class="news-meta">
+                                <span><i class="fas fa-user"></i> ${item.author}</span>
+                                <span><i class="fas fa-clock"></i> ${item.date}</span>
+                            </div>
+                            <span><i class="fas fa-eye"></i> ${item.views.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+
+            document.getElementById('newsGrid').innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); padding: 3rem;">No articles found in this category.</p>';
+
+            // Update load more button based on current category
+            const btn = document.querySelector('.load-more-btn');
+            if (toShow.length >= filtered.length) {
+                btn.innerHTML = 'No More Articles';
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="display: none;"></i> Load More Articles';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        }
+
+        function openArticleModal(id) {
+            const article = newsData.find(n => n.id === id);
+            if (!article) return;
+
+            currentModalArticle = article;
+
+            document.getElementById('modalImage').src = article.image;
+            document.getElementById('modalCategory').textContent = article.categoryLabel;
+            document.getElementById('modalTitle').textContent = article.title;
+            document.getElementById('modalAuthor').textContent = article.author;
+            document.getElementById('modalDate').textContent = article.date;
+            document.getElementById('modalViews').textContent = article.views.toLocaleString();
+            document.getElementById('modalReadTime').textContent = article.readTime;
+            document.getElementById('modalContent').innerHTML = article.content;
+
+            const btn = document.getElementById('modalBookmarkBtn');
+            const isSaved = isBookmarked(article.id);
+            btn.innerHTML = `<i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i> ${isSaved ? 'Saved' : 'Bookmark'}`;
+
+            document.getElementById('modalOverlay').classList.add('active');
+            document.getElementById('articleModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('articleModal').classList.remove('active');
+            document.body.style.overflow = '';
+            currentModalArticle = null;
+        }
+
+        function toggleModalBookmark() {
+            if (currentModalArticle) {
+                toggleBookmark({ stopPropagation: () => {} }, currentModalArticle.id);
+                const btn = document.getElementById('modalBookmarkBtn');
+                const isSaved = isBookmarked(currentModalArticle.id);
+                btn.innerHTML = `<i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i> ${isSaved ? 'Saved' : 'Bookmark'}`;
+            }
+        }
+
+        function shareArticle() {
+            if (currentModalArticle) {
+                if (navigator.share) {
+                    navigator.share({
+                        title: currentModalArticle.title,
+                        text: currentModalArticle.excerpt,
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    showToast('Link copied to clipboard!');
+                }
+            }
+        }
+
+        function toggleBookmark(event, id) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            const index = bookmarks.findIndex(b => b.id === id);
+            const article = newsData.find(n => n.id === id);
+
+            if (index > -1) {
+                bookmarks.splice(index, 1);
+                showToast('Article removed from bookmarks', 'error');
+            } else {
+                bookmarks.push(article);
+                showToast('Article bookmarked!');
+            }
+
+            localStorage.setItem('newshub_bookmarks', JSON.stringify(bookmarks));
+            updateBookmarkCount();
+            renderNews();
+            renderBookmarksList();
+        }
+
+        function isBookmarked(id) {
+            return bookmarks.some(b => b.id === id);
+        }
+
+        function updateBookmarkCount() {
+            const count = bookmarks.length;
+            document.getElementById('bookmarkCount').textContent = count;
+            document.getElementById('bookmarkCount').style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        function renderBookmarksList() {
+            const list = document.getElementById('bookmarksList');
+
+            if (bookmarks.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-bookmarks">
+                        <i class="fas fa-bookmark"></i>
+                        <p>No bookmarks yet. Click the bookmark icon on any article to save it!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = bookmarks.map(item => `
+                <div class="bookmark-item" onclick="openArticleModal(${item.id})">
+                    <img src="${item.image}" alt="${item.title}" onerror="this.src=\'https://picsum.photos/seed/fallback\' + Math.random() + \'/800/400\'">
+                    <div class="bookmark-info">
+                        <h4>${item.title}</h4>
+                        <p>${item.categoryLabel} · ${item.date}</p>
+                    </div>
+                    <button class="remove-bookmark" onclick="removeBookmark(event, ${item.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeBookmark(event, id) {
+            event.stopPropagation();
+            bookmarks = bookmarks.filter(b => b.id !== id);
+            localStorage.setItem('newshub_bookmarks', JSON.stringify(bookmarks));
+            updateBookmarkCount();
+            renderNews();
+            renderBookmarksList();
+            showToast('Article removed from bookmarks', 'error');
+        }
+
+        function toggleBookmarks() {
+            const sidebar = document.getElementById('bookmarksSidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            renderBookmarksList();
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const icon = document.querySelector('#themeToggle i');
+
+            if (isDarkMode) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('newshub_theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('newshub_theme', 'light');
+            }
+        }
+
+        function toggleView() {
+            currentView = currentView === 'grid' ? 'list' : 'grid';
+            const grid = document.getElementById('newsGrid');
+            const icon = document.getElementById('viewIcon');
+
+            if (currentView === 'list') {
+                grid.classList.add('list-view');
+                icon.classList.replace('fa-list', 'fa-th-large');
+            } else {
+                grid.classList.remove('list-view');
+                icon.classList.replace('fa-th-large', 'fa-list');
+            }
+        }
+
+        function setView(view) {
+            currentView = view;
+            const grid = document.getElementById('newsGrid');
+            const buttons = document.querySelectorAll('.view-toggle .control-btn');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            buttons[view === 'grid' ? 0 : 1].classList.add('active');
+
+            if (view === 'list') {
+                grid.classList.add('list-view');
+            } else {
+                grid.classList.remove('list-view');
+            }
+        }
+
+        function filterCategory(category, element) {
+            currentCategory = category;
+            displayedCount = 6; // Reset to show initial 6 articles
+
+            document.querySelectorAll('.nav a').forEach(link => link.classList.remove('active'));
+            if (element) element.classList.add('active');
+            else {
+                const navLink = document.querySelector(`.nav a[data-category="${category}"]`);
+                if (navLink) navLink.classList.add('active');
+            }
+
+            const titles = {
+                all: 'Latest News',
+                world: 'World News',
+                technology: 'Technology',
+                business: 'Business',
+                science: 'Science',
+                sports: 'Sports',
+                entertainment: 'Entertainment'
+            };
+            document.getElementById('latestTitle').innerHTML = `<i class="fas fa-clock"></i> ${titles[category] || 'Latest News'}`;
+
+            if (category === 'all') {
+                document.getElementById('featuredSection').style.display = 'block';
+                renderFeatured();
+            } else {
+                document.getElementById('featuredSection').style.display = 'none';
+            }
+
+            // Reset and show load more button
+            const btn = document.querySelector('.load-more-btn');
+            btn.style.display = 'inline-block';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="display: none;"></i> Load More Articles';
+
+            renderNews();
+        }
+
+        function resetHome() {
+            filterCategory('all', document.querySelector('.nav a[data-category="all"]'));
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!query) {
+                renderNews();
+                return;
+            }
+
+            const filtered = newsData.filter(item => 
+                item.title.toLowerCase().includes(query) || 
+                item.excerpt.toLowerCase().includes(query) ||
+                item.categoryLabel.toLowerCase().includes(query)
+            );
+
+            document.getElementById('featuredSection').style.display = 'none';
+            document.getElementById('latestTitle').innerHTML = `<i class="fas fa-search"></i> Search Results`;
+
+            document.getElementById('newsGrid').innerHTML = filtered.map(item => `
+                <article class="news-card" data-id="${item.id}">
+                    <img src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.src=\'https://picsum.photos/seed/fallback\' + Math.random() + \'/800/400\'">
+                    <div class="news-card-content">
+                        <div class="news-card-header">
+                            <span class="news-category">${item.categoryLabel}</span>
+                            <button class="bookmark-btn ${isBookmarked(item.id) ? 'active' : ''}" onclick="toggleBookmark(event, ${item.id})">
+                                <i class="${isBookmarked(item.id) ? 'fas' : 'far'} fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <h3 class="news-title" onclick="openArticleModal(${item.id})">${item.title}</h3>
+                        <p class="news-excerpt">${item.excerpt}</p>
+                        <div class="news-footer">
+                            <div class="news-meta">
+                                <span><i class="fas fa-user"></i> ${item.author}</span>
+                                <span><i class="fas fa-clock"></i> ${item.date}</span>
+                            </div>
+                            <span><i class="fas fa-eye"></i> ${item.views.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </article>
+            `).join('') || '<p style="text-align: center; color: var(--text-secondary); padding: 3rem;">No articles found matching your search.</p>';
+        }
+
+        function sortNews() {
+            const sort = document.getElementById('sortSelect').value;
+
+            if (sort === 'newest') {
+                newsData.sort((a, b) => a.id - b.id);
+            } else if (sort === 'oldest') {
+                newsData.sort((a, b) => b.id - a.id);
+            } else if (sort === 'popular') {
+                newsData.sort((a, b) => b.views - a.views);
+            }
+
+            renderNews();
+        }
+
+        function loadMore() {
+            displayedCount += 6;
+            renderNews();
+
+            const btn = document.querySelector('.load-more-btn');
+            const spinner = btn.querySelector('.fa-spinner');
+            spinner.style.display = 'inline-block';
+
+            setTimeout(() => {
+                spinner.style.display = 'none';
+
+                // Check if we've shown all articles for current category
+                let filtered = currentCategory === 'all' 
+                    ? newsData.filter(n => !n.featured)
+                    : newsData.filter(n => n.category === currentCategory);
+
+                if (displayedCount >= filtered.length) {
+                    btn.innerHTML = 'No More Articles';
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                }
+            }, 500);
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const icon = toast.querySelector('i');
+
+            toastMessage.textContent = message;
+            toast.className = 'toast show ' + type;
+
+            if (type === 'error') {
+                icon.className = 'fas fa-times-circle';
+            } else {
+                icon.className = 'fas fa-check-circle';
+            }
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('nav').classList.toggle('open');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                const sidebar = document.getElementById('bookmarksSidebar');
+                if (sidebar.classList.contains('open')) toggleBookmarks();
+            }
+        });
+    </script>
+</body>
+</html>
